@@ -19,26 +19,28 @@ def get_session():
 def load_clean(session, filename="online_retail_sample.csv"):
     """从 Volume 读取 CSV，清洗后返回 ZettaPark DataFrame。
 
-    ZettaPark 不支持 inferSchema，用 session.sql + USING CSV OPTIONS 读取。
-    列名和类型由 Lakehouse 根据 header 自动推断。
+    在 SELECT 里直接重命名 'Customer ID'（含空格）为 CustomerID，
+    避免后续所有操作都需要用反引号处理含空格列名。
     """
     df = session.sql(f"""
-        SELECT *
+        SELECT
+            Invoice,
+            StockCode,
+            Description,
+            Quantity,
+            InvoiceDate,
+            Price,
+            `Customer ID` AS CustomerID,
+            Country
         FROM VOLUME {SCHEMA_NAME}.{VOLUME_NAME}
         USING CSV
         OPTIONS ('header' = 'true', 'nullValue' = '')
         FILES ('raw/{filename}')
+        WHERE Invoice NOT LIKE 'C%'
+          AND `Customer ID` IS NOT NULL
+          AND Quantity > 0
+          AND Price > 0
     """)
-
-    # 去除取消订单（Invoice 以 C 开头）
-    df = df.filter(~F.col("Invoice").cast("string").startswith("C"))
-
-    # 去除缺失 Customer ID
-    df = df.filter(F.col("Customer ID").is_not_null())
-
-    # 去除异常数量和价格
-    df = df.filter(F.col("Quantity") > 0)
-    df = df.filter(F.col("Price") > 0)
 
     # 新增 Revenue 列
     df = df.with_column("Revenue", F.col("Quantity") * F.col("Price"))

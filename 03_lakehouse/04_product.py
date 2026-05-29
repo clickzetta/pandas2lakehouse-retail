@@ -39,7 +39,7 @@ def country_revenue(df):
         df.group_by("Country")
         .agg(
             F.round(F.sum("Revenue"), 2).alias("Revenue"),
-            F.count_distinct("Customer ID").alias("Customers"),
+            F.count_distinct("CustomerID").alias("Customers"),
             F.count_distinct("Invoice").alias("Orders"),
         )
         .sort(F.col("Revenue").desc())

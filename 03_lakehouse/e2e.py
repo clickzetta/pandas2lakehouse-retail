@@ -98,7 +98,7 @@ def main():
         print("\n=== RFM 分析 ===")
         t = time.time()
         snapshot = df.agg(F.max("InvoiceDate")).collect()[0][0]
-        rfm = df.group_by("Customer ID").agg(
+        rfm = df.group_by("CustomerID").agg(
             F.datediff("day", F.max("InvoiceDate"), F.lit(snapshot)).alias("Recency"),
             F.count_distinct("Invoice").alias("Frequency"),
             F.round(F.sum("Revenue"), 2).alias("Monetary"),

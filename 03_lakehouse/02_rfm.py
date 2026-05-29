@@ -2,7 +2,7 @@
 02_rfm.py — RFM 客户分层分析（ZettaPark 版）
 
 pandas → ZettaPark 对照：
-  df.groupby("Customer ID").agg(...)   → df.group_by("Customer ID").agg(...)
+  df.groupby("CustomerID").agg(...)   → df.group_by("CustomerID").agg(...)
   lambda x: (snapshot - x.max()).days  → F.datediff("day", F.max("InvoiceDate"), F.lit(snapshot))
   df["col"].nunique()                  → F.count_distinct("Invoice")
   df.assign(Segment=df.apply(...))     → df.with_column("Segment", F.when(...).otherwise(...))
@@ -26,7 +26,7 @@ from includes.helpers import get_session, load_clean
 def compute_rfm(session, df):
     snapshot = df.agg(F.max("InvoiceDate")).collect()[0][0]
 
-    rfm = df.group_by("Customer ID").agg(
+    rfm = df.group_by("CustomerID").agg(
         F.datediff("day", F.max("InvoiceDate"), F.lit(snapshot)).alias("Recency"),
         F.count_distinct("Invoice").alias("Frequency"),
         F.round(F.sum("Revenue"), 2).alias("Monetary"),
