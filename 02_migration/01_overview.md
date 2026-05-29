@@ -8,7 +8,7 @@
 |------|--------|-----------|
 | 扩展 RFM（购买间隔分析） | 8.2s，峰值 203MB | 3.2s，本地内存 0 |
 | 周粒度同期群留存 | 9.4s，峰值 236MB | 5.9s，本地内存 0 |
-| 多窗口 Cohort（滚动4周+环比+排名） | 2.4s，峰值 203MB | 3.1s，本地内存 0 |
+| 商品关联分析（self-join） | 9.3s，峰值 2203MB | 3.2s，本地内存 0 |
 
 数据规模：UCI Online Retail II，106 万行原始数据，清洗后 80.5 万行，5,878 个客户。
 
@@ -109,7 +109,8 @@ SUM(week_revenue) OVER (
 |------|---------|--------|
 | `load_clean()` | 替换 read_csv → session.sql + FROM VOLUME | 约 15 行 |
 | `compute_rfm_advanced()` | groupby+apply → session.sql CTE | 约 50 行 SQL |
-| `compute_cohort_advanced()` | rolling+rank → session.sql CTE | 约 60 行 SQL |
+| `compute_cohort()` | groupby+join → session.sql CTE | 约 40 行 SQL |
+| `compute_market_basket()` | self-join → session.sql self-join | 约 40 行 SQL |
 | `save()` | to_csv → write.save_as_table | 约 3 行 |
 
 总计：约 2 小时完成迁移，分析逻辑零改动。
